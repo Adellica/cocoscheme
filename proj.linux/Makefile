@@ -5,7 +5,9 @@ CCFLAGS = -Wall
 CXXFLAGS = -Wall
 VISIBILITY = 
 
-COCOS2DX_PATH = ../../../cocos2dx
+COCOS2DX_HOME = /home/klm/opt/cocos2d-2.0-x-2.0.3/
+COCOS2DX_PATH = $(COCOS2DX_HOME)/cocos2dx
+
 INCLUDES =  -I../ \
 			-I../Classes \
 			-I$(COCOS2DX_PATH) \
@@ -29,9 +31,9 @@ OBJECTS = ./main.o \
 
 LBITS := $(shell getconf LONG_BIT)
 ifeq ($(LBITS),64)
-STATICLIBS_DIR = ../../../cocos2dx/platform/third_party/linux/libraries/lib64
+STATICLIBS_DIR = $(COCOS2DX_PATH)/platform/third_party/linux/libraries/lib64
 else
-STATICLIBS_DIR = ../../../cocos2dx/platform/third_party/linux/libraries
+STATICLIBS_DIR = $(COCOS2DX_PATH)/platform/third_party/linux/libraries
 endif
 STATICLIBS = 
 STATICLIBS = $(STATICLIBS_DIR)/libfreetype.a \
@@ -42,8 +44,8 @@ STATICLIBS = $(STATICLIBS_DIR)/libfreetype.a \
 #				$(STATICLIBS_DIR)/libGLEW.a \
 
 SHAREDLIBS = -lglfw -lcurl
-SHAREDLIBS += -Wl,-rpath,../../../../../cocos2dx/platform/third_party/linux/glew-1.7.0/glew-1.7.0/lib
-SHAREDLIBS += -L../../../cocos2dx/platform/third_party/linux/glew-1.7.0/glew-1.7.0/lib -lGLEW
+SHAREDLIBS += -Wl,-rpath,$(COCOS2DX_PATH)/platform/third_party/linux/glew-1.7.0/glew-1.7.0/lib
+SHAREDLIBS += -L$(COCOS2DX_PATH)/platform/third_party/linux/glew-1.7.0/glew-1.7.0/lib -lGLEW
 
 #$(shell ../../build-linux.sh $<)
 
@@ -53,16 +55,16 @@ BIN_DIR = $(BIN_DIR_ROOT)
 debug: BIN_DIR = $(BIN_DIR_ROOT)/debug
 debug: CCFLAGS += -g3 -O0
 debug: CXXFLAGS += -g3 -O0
-debug: SHAREDLIBS += -L../../../lib/linux/Debug -lcocos2d -lrt -lz -lcocosdenshion
-debug: SHAREDLIBS += -Wl,-rpath,../../../../../lib/linux/Debug/
+debug: SHAREDLIBS += -L$(COCOS2DX_HOME)/lib/linux/Debug -lcocos2d -lrt -lz -lcocosdenshion
+debug: SHAREDLIBS += -Wl,-rpath,$(COCOS2DX_HOME)/lib/linux/Debug/
 debug: DEFINES += -DDEBUG
 debug: $(TARGET)
 
 release: BIN_DIR = $(BIN_DIR_ROOT)/release
 release: CCFLAGS += -O3
 release: CXXFLAGS += -O3
-release: SHAREDLIBS += -L../../../lib/linux/Release -lcocos2d -lrt -lz -lcocosdenshion
-release: SHAREDLIBS += -Wl,-rpath,../../../../../lib/linux/Release/
+release: SHAREDLIBS += -L$(COCOS2DX_HOME)/lib/linux/Release -lcocos2d -lrt -lz -lcocosdenshion
+release: SHAREDLIBS += -Wl,-rpath,$(COCOS2DX_HOME)/lib/linux/Release/
 release: DEFINES += -DNDEBUG
 release: $(TARGET)
 
