@@ -43,7 +43,7 @@ STATICLIBS = $(STATICLIBS_DIR)/libfreetype.a \
 				$(STATICLIBS_DIR)/libtiff.a \
 #				$(STATICLIBS_DIR)/libGLEW.a \
 
-SHAREDLIBS = -lglfw -lcurl
+SHAREDLIBS = -lglfw -lcurl ./test.so
 SHAREDLIBS += -Wl,-rpath,$(COCOS2DX_PATH)/platform/third_party/linux/glew-1.7.0/glew-1.7.0/lib
 SHAREDLIBS += -L$(COCOS2DX_PATH)/platform/third_party/linux/glew-1.7.0/glew-1.7.0/lib -lGLEW
 

@@ -17,6 +17,14 @@ CCScene* HelloWorld::scene()
     return scene;
 }
 
+extern "C" void c_foo(CCNode*);
+void HelloWorld::update(float dt) 
+{
+  //printf("update\n");
+  c_foo(this);
+}
+
+static CCSprite* sp;
 // on "init" you need to initialize your instance
 bool HelloWorld::init()
 {
@@ -44,10 +52,23 @@ bool HelloWorld::init()
     pCloseItem->setPosition(ccp(origin.x + visibleSize.width - pCloseItem->getContentSize().width/2 ,
                                 origin.y + pCloseItem->getContentSize().height/2));
 
+    pCloseItem->runAction(CCRepeatForever::create(CCRotateBy::create(16, 360)));
+
     // create menu, it's an autorelease object
     CCMenu* pMenu = CCMenu::create(pCloseItem, NULL);
     pMenu->setPosition(CCPointZero);
     this->addChild(pMenu, 1);
+
+    sp = CCSprite::create("ground/G000M800.png");
+    sp->setPosition(ccp(100, 100));
+    this->addChild(sp, 0);
+
+    CCSprite *sp2 = CCSprite::create("ground/G000M800.png");
+    sp2->setPosition(ccp(229, 100));
+    this->addChild(sp2, 0);
+
+    //    sp2->runAction(CCRepeatForever::create(CCRotateBy::create(5, 90)));
+
 
     /////////////////////////////
     // 3. add your codes below...
@@ -70,18 +91,20 @@ bool HelloWorld::init()
     pSprite->setPosition(ccp(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
 
     // add the sprite as a child to this layer
-    this->addChild(pSprite, 0);
+    //this->addChild(pSprite, 0);
     
     // enable standard touch
     this->setTouchEnabled(true);
-    
+
+    // make sure we call our scheme callback
+    this->scheduleUpdate();
     return true;
 }
 
 void HelloWorld::menuCloseCallback(CCObject* pSender)
 {
-    CCDirector::sharedDirector()->end();
-
+  //   CCDirector::sharedDirector()->end();
+  sp->runAction(CCRotateBy::create(2, 45));
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
     exit(0);
 #endif
