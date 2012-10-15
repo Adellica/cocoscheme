@@ -76,7 +76,7 @@ $(TARGET): $(OBJECTS) ./bin/cocoscheme.so
 
 ####### Compile
 ./bin/cocoscheme.so: ../scm/cocoscheme.scm
-	csc -s -c++ ../scm/cocoscheme.scm -o ./cocoscheme.so -C -DLINUX $(INCLUDES)
+	csc -s -c++ ../scm/cocoscheme.scm -o ./cocoscheme.so -C -DLINUX $(INCLUDES) -include-path ../scm
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(DEFINES) $(VISIBILITY) -c $< -o $@
