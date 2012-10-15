@@ -2,18 +2,26 @@
 class CCObject {};
 class CCAction {};
 
-class CCRotateBy // : public CCActionInterval
-{
-public:
-  static CCRotateBy* create(float duration, float fDeltaAngle);
-};
-
-class CCArray 
+class CCArray : public CCObject
 {
 public:
   unsigned int count();
   CCObject* objectAtIndex(unsigned int index);
 };
+
+
+class CCPoint : public CCObject 
+{
+public:
+  CCPoint(float x, float y); // coops supports only one constructor,
+                             // this is the winner.
+  void setPoint(float x, float y);
+};
+
+
+
+// Nodes and such:
+
 
 class CCNode // : public CCObject TODO
 {
@@ -46,5 +54,63 @@ class CCSprite : public CCNode
 {
 public:
   static CCSprite* create(const char *pszFileName);
+  virtual void setOpacity(unsigned char var);
+  //virtual unsigned char getOpacity();
 };
+
+// layer
+
+class CCLayer : public CCNode // : TODO
+{
+public:
+  static CCLayer* create();
+};
+
+// actions
+
+
+class CCRotateBy // : public CCActionInterval
+{
+public:
+  static CCRotateBy* create(float duration, float fDeltaAngle);
+};
+
+class CCMoveBy // TODO
+{
+public:
+  static CCMoveBy * create(float duration, const CCPoint &position);
+};
+
+class CCFlipX // : TODO
+{ public static CCFlipX* create(bool x); };
+
+class CCFlipY // : TODO
+{ public static CCFlipY* create(bool y); };
+
+// events
+
+class CCTouch : public CCObject
+{
+public:
+  // CCPoint getLocation();
+};
+
+
+
+// drawing
+
+// does not work:
+void ccDrawColor4F(float r, float g, float b, float a );
+void ccDrawColor4B(unsigned char r, unsigned char g, unsigned char b, unsigned char a );
+
+void ccDrawLine(const CCPoint &origin, const CCPoint &destination);
+void ccDrawCircle(const CCPoint& center, float radius, float angle, unsigned int segments, bool drawLineToCenter);
+
+// unable to map:
+//void ccDrawPoly( const CCPoint *poli, unsigned int numberOfPoints, bool closePolygon );
+// void ccDrawSolidPoly( const CCPoint *poli, unsigned int
+// numberOfPoints, ccColor4F color );
+
+// natively defined:
+// void ccDrawSolidRect( CCPoint* origin, CCPoint* destination, float r, float g, float b, float a )
 

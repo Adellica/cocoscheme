@@ -2,6 +2,11 @@
 
 USING_NS_CC;
 
+extern "C" void c_foo(CCNode*);
+extern "C" void c_draw();
+extern "C" void c_touch_begin(CCTouch*);
+extern "C" void c_touch_moved(CCTouch*);
+
 CCScene* HelloWorld::scene()
 {
     // 'scene' is an autorelease object
@@ -17,13 +22,16 @@ CCScene* HelloWorld::scene()
     return scene;
 }
 
-extern "C" void c_foo(CCNode*);
 void HelloWorld::update(float dt) 
 {
   //printf("update\n");
   c_foo(this);
 }
 
+void HelloWorld::draw()
+{
+  c_draw();
+}
 static CCSprite* sp;
 // on "init" you need to initialize your instance
 bool HelloWorld::init()
@@ -114,6 +122,13 @@ void HelloWorld::ccTouchesBegan(CCSet *pTouches, CCEvent *pEvent)
 {
     CCTouch* touch = (CCTouch*)(* pTouches->begin());
     CCPoint pos = touch->getLocation();
-    
-    CCLog("touch, x = %f, y = %f", pos.x, pos.y);
+
+    c_touch_begin(touch);
+}
+
+void HelloWorld::ccTouchesMoved(CCSet *pTouches, CCEvent *pEvent)
+{
+    CCTouch* touch = (CCTouch*)(* pTouches->begin());
+
+    c_touch_moved(touch);
 }
