@@ -70,13 +70,16 @@ release: DEFINES += -DNDEBUG
 release: $(TARGET)
 
 ####### Build rules
-$(TARGET): $(OBJECTS) ./bin/cocoscheme.so
+$(TARGET): $(OBJECTS) ./cocoscheme.so
 	mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(DEFINES) $(OBJECTS) -o $(BIN_DIR)/$(TARGET) $(SHAREDLIBS) $(STATICLIBS)
 
 ####### Compile
-./bin/cocoscheme.so: ../scm/cocoscheme.scm
+./cocoscheme.so: ../scm/cocoscheme.scm
 	csc -s -c++ ../scm/cocoscheme.scm -o ./cocoscheme.so -C -DLINUX $(INCLUDES) -include-path ../scm
+
+../scm/cocoscheme.scm: ../scm/cocoscheme-*.scm
+#	touch ../scm/cocoscheme.scm
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(DEFINES) $(VISIBILITY) -c $< -o $@
