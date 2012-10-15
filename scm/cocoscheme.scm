@@ -27,27 +27,56 @@ USING_NS_CC;
 (include "cocoscheme-bindhelpers.scm")
 
 
-(define (repl-prompt)
-  (display "@> ")
-  (flush-output))
+(use tcp)
+(define *repl-socket* (tcp-listen 1234))
 
-(repl-prompt)
 
-(define (repl-loop port)
+
+(define (repl-prompt op)
+  (display "@> " op)
+  (flush-output op))
+
+(define (repl-loop in-port out-port)
   (let loop ()
-    (repl-prompt)
-    (handle-exceptions
-        exn
-      (begin (print-error-message exn)
-             (print-call-chain (current-output-port) 4)
-             (repl-prompt)
+    (repl-prompt out-port)
+    (handle-exceptions exn
+      (begin (print-error-message exn out-port)
+             (print-call-chain out-port 4)
              (loop))
-      (print (eval (read port)))
+      (let ([sexp (read in-port)])
+        ;; eof, exit repl loop
+        (if (eof-object? sexp)
+            (fiber-yield!))
+        (with-output-to-port out-port
+          (lambda ()
+            (with-error-output-to-port
+             out-port
+             (lambda ()
+               (let ([result (eval sexp)])
+                 (if (eq? (void) result)
+                     (void) ;; don't print unspecified's
+                     (begin
+                       (display result out-port)
+                       (display "\n" out-port)))))))))
       (loop))))
 
-(fiber-new 'repl
-           (lambda ()
-             (repl-loop (make-yielding-input-port (current-input-port)))))
+
+;; check if there are incoming repl connections
+;; if so, make a handler and add to the the fiber-queue 
+(define (repl-server-dispatch)
+  (when (tcp-accept-ready? *repl-socket*)
+    (tcp-read-timeout #f)
+    (define-values (IN OUT) (tcp-accept *repl-socket*))
+    (fiber-new  (string->symbol ;; name fiber with hostname&port
+                 (conc "repl@"
+                       (let-values (((local-adr remote-adr) (tcp-addresses IN)))
+                         remote-adr) ":"
+                       (let-values (((local-port remote-port)
+                                     (tcp-port-numbers IN)))
+                         remote-port)))
+                (lambda ()
+                  (repl-loop (make-yielding-input-port IN) OUT)))))
+
 
 (define *scene* #f)
 
@@ -73,6 +102,7 @@ USING_NS_CC;
 (define *update* (lambda () (void)))
 (define-external (c_foo ((instance "CCNode" <CCNode>) root_scene)) void
   (set! *scene* root_scene)
+  (repl-server-dispatch)
   (*update*)
   (fiber-yield!))
 
