@@ -27,7 +27,8 @@ DEFINES = -DLINUX
 
 OBJECTS = ./main.o \
         ../Classes/AppDelegate.o \
-        ../Classes/HelloWorldScene.o 
+        ../Classes/HelloWorldScene.o \
+#        ../Classes/cocos2dx_extension/Extensions/CCLayerPanZoom/CCLayerPanZoom.o
 
 LBITS := $(shell getconf LONG_BIT)
 ifeq ($(LBITS),64)
@@ -43,7 +44,7 @@ STATICLIBS = $(STATICLIBS_DIR)/libfreetype.a \
 				$(STATICLIBS_DIR)/libtiff.a \
 #				$(STATICLIBS_DIR)/libGLEW.a \
 
-SHAREDLIBS = -lglfw -lcurl ./test.so
+SHAREDLIBS = -lglfw -lcurl ./cocoscheme.so
 SHAREDLIBS += -Wl,-rpath,$(COCOS2DX_PATH)/platform/third_party/linux/glew-1.7.0/glew-1.7.0/lib
 SHAREDLIBS += -L$(COCOS2DX_PATH)/platform/third_party/linux/glew-1.7.0/glew-1.7.0/lib -lGLEW
 
@@ -69,11 +70,14 @@ release: DEFINES += -DNDEBUG
 release: $(TARGET)
 
 ####### Build rules
-$(TARGET): $(OBJECTS) 
+$(TARGET): $(OBJECTS) ./bin/cocoscheme.so
 	mkdir -p $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(DEFINES) $(OBJECTS) -o $(BIN_DIR)/$(TARGET) $(SHAREDLIBS) $(STATICLIBS)
 
 ####### Compile
+./bin/cocoscheme.so: ../scm/cocoscheme.scm
+	csc -s -c++ ../scm/cocoscheme.scm -o ./cocoscheme.so -C -DLINUX $(INCLUDES)
+
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $(DEFINES) $(VISIBILITY) -c $< -o $@
 
