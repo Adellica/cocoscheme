@@ -3,7 +3,7 @@
 // load chicken at load-time (when so file gets loaded)
 // probably not very safe in terms of error-handling, but
 // it allows us to not worry about any chicken-include-paths
-// from the cocos2d project :)
+// from the cocos2d project :
 namespace {
   struct initializer {
     initializer() {
@@ -20,9 +20,32 @@ namespace {
 #include "cocos2d.h"
 USING_NS_CC;
 <#
+
 (bind-file "/home/klm/projects/cocos2d/HelloWorld/scm/CCNode.bind.hpp")
 
-(use fibers)
+
+(bind*  "
+void ccDrawSolidPoly(float* points, unsigned int numberOfPoints, float r, float g, float b, float a)
+{
+ CCPoint p [ 32 ];
+ ccColor4F color = {r, g, b, a};         
+ for(int i = 0 ; i < MIN(numberOfPoints, 32) ; i++ ) {
+    p [i].x = points [ i * 2 + 0];
+    p [i].y = points [ i * 2 + 1];
+ }
+ ccDrawSolidPoly (p, MIN (numberOfPoints, 32), color);
+}")
+
+(bind* "
+void ccDrawSolidRect( CCPoint* origin, CCPoint* destination, float r, float g, float b, float a )
+{
+  ccColor4F color = {r, g, b, a};
+  ccDrawSolidRect(*origin, *destination, color );
+}") 
+
+
+
+(use fibers srfi-4)
 
 ;; cast coops class of cpp-inst to the
 ;; actual class of the underlying cpp instance
@@ -53,7 +76,10 @@ USING_NS_CC;
       (find-coops-instance CCSprite
                            CCMenu
                            CCMenuItemImage
-                           CCNode
+                           #| ^ |# CCMenuItem
+                           CCLayer
+                           #| ^ |# CCNode
+                           CCTouch
                            CCObject)))
   (if coops-instance
       ;; make a new class instance (of type coops-instance) and
@@ -98,9 +124,58 @@ USING_NS_CC;
 
 (define *scene* #f)
 
+(define-method (getLocation (touch <CCTouch>))
+  (let ([x ((foreign-lambda* float (((instance "CCTouch" <CCTouch>) touch))
+                        "return(touch->getLocation().x);")
+            touch)]
+        [y ((foreign-lambda* float (((instance "CCTouch" <CCTouch>) touch))
+                        "return(touch->getLocation().y);")
+            touch)])
+    (f32vector x y)))
+
+(define-method (getDelta (touch <CCTouch>))
+  (let ([x ((foreign-lambda* float (((instance "CCTouch" <CCTouch>) touch))
+                        "return(touch->getDelta().x);")
+            touch)]
+        [y ((foreign-lambda* float (((instance "CCTouch" <CCTouch>) touch))
+                        "return(touch->getDelta().y);")
+            touch)])
+    (f32vector x y)))
+
+
+(define *update* (lambda () (void)))
 (define-external (c_foo ((instance "CCNode" <CCNode>) root_scene)) void
   (set! *scene* root_scene)
+  (*update*)
   (fiber-yield!))
+
+
+(define *draw* (lambda () (void)))
+(define-external (c_draw) void
+  (handle-exceptions exn
+    (begin (print-error-message exn)
+           (print-call-chain))
+    (*draw*)))
+
+
+;; TODO support multi-touch
+(define *touch-begin* #f)
+(define-external (c_touch_begin ((instance "CCTouch" <CCTouch>) touch)) void
+  (if *touch-begin*
+      (handle-exceptions exn
+        (begin (print-error-message exn)
+               (print-call-chain))
+        (*touch-begin* touch))))
+
+(define *touch-moved* #f)
+(define-external (c_touch_moved ((instance "CCTouch" <CCTouch>) touch)) void
+  (if *touch-moved*
+      (handle-exceptions exn
+        (begin (print-error-message exn)
+               (print-call-chain))
+        (*touch-moved* touch))))
+
+
 
 
 (return-to-host)
