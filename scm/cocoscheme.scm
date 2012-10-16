@@ -56,7 +56,7 @@ USING_NS_CC;
                  (if (eq? (void) result)
                      (void) ;; don't print unspecified's
                      (begin
-                       (display result out-port)
+                       (write result out-port)
                        (display "\n" out-port)))))))))
       (loop))))
 
