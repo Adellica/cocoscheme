@@ -4,12 +4,30 @@
 ** DONE Networked REPL
 ** DONE Make it work on Android
 ** TODO stdout: broadcast on REPLs!
+** Modularize & clean fibers API
+** Memory management
+*** WAITING Investigate bad_alloc crash on Linux
+*** DONE find out if it works properly on Android (no memory leak there!)
+*** TODO analyze suspicious memory consumption (leak?) on Android
 ** SpaceManager
 *** TODO Make cp shapes<-> coco sprites
 *** TODO Render textures at runtime? (segments become nice metal bars etc)
 *** TODO Make 
-** WAITING Investigate bad_alloc crash (Linux only!)
-*** DONE find out if it works properly on Android (no memory leak there!)
 ** Some game engine features
+*** TODO Resources: allow uploading resources from REPL
 *** TODO Pause game, go back 5 seconds and show the future! Just like Bret Victor does.
 *** TODO Multiplayer! Chipmunk space deltas and sync!
+
+* Possible event types
+- touch screen
+- press key
+- touch button/sprite
+- chipmunk collisions
+  - bullet hits player
+  - truck lifts off/jumps
+  - truck ground touch-down
+- incoming network packet/command
+- player enters same room as enemy X
+- player dies
+- high scores for level X changes
+- new player connects
