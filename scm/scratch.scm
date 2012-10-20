@@ -17,7 +17,7 @@
 ;; #f if not touching, otherwise vector position
 (define *touch-down* #f)
 (add-handler 'touch-begin
-             (lambda (t) (set! *touch-down* (getLocation t))))
+             (lambda (t) (set! *touch-down*  t)))
 (add-handler 'touch-ended
              (lambda (t) (set! *touch-down* #f)))
 

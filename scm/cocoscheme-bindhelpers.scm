@@ -74,13 +74,13 @@
 
 ;; TODO support multi-touch
 (define-external (c_touch_begin ((instance "CCTouch" <CCTouch>) touch)) void
-  (post-event 'touch-begin touch))
+  (post-event 'touch-begin (getLocation touch)))
 
 (define-external (c_touch_moved ((instance "CCTouch" <CCTouch>) touch)) void
-  (post-event 'touch-moved touch))
+  (post-event 'touch-moved (getLocation touch) (getDelta touch)))
 
 (define-external (c_touch_ended ((instance "CCTouch" <CCTouch>) touch)) void
-  (post-event 'touch-ended touch))
+  (post-event 'touch-ended (getLocation touch)))
 
 
 (define (fps)
