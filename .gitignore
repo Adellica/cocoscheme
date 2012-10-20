@@ -1,0 +1,10 @@
+/proj.android/obj/
+/proj.android/bin/
+/proj.android/libs/
+/proj.android/assets/
+/proj.android/gen/
+/proj.android/local.properties
+/proj.ios/
+/proj.mac/
+/proj.win32/
+/proj.blackberry/
