@@ -52,3 +52,51 @@
 
 (define (children node)
   (map dynamic-cast (CCArray->list (getChildren node))))
+
+
+(define-method (getLocation (touch <CCTouch>))
+  (let ([x ((foreign-lambda* float (((instance "CCTouch" <CCTouch>) touch))
+                        "return(touch->getLocation().x);")
+            touch)]
+        [y ((foreign-lambda* float (((instance "CCTouch" <CCTouch>) touch))
+                        "return(touch->getLocation().y);")
+            touch)])
+    (f32vector x y)))
+
+(define-method (getDelta (touch <CCTouch>))
+  (let ([x ((foreign-lambda* float (((instance "CCTouch" <CCTouch>) touch))
+                        "return(touch->getDelta().x);")
+            touch)]
+        [y ((foreign-lambda* float (((instance "CCTouch" <CCTouch>) touch))
+                        "return(touch->getDelta().y);")
+            touch)])
+    (f32vector x y)))
+
+;; TODO support multi-touch
+(define *touch-begin* #f)
+(define-external (c_touch_begin ((instance "CCTouch" <CCTouch>) touch)) void
+  (if *touch-begin*
+      (handle-exceptions exn
+        (begin (print-error-message exn)
+               (print-call-chain))
+        (*touch-begin* touch))))
+
+(define *touch-moved* #f)
+(define-external (c_touch_moved ((instance "CCTouch" <CCTouch>) touch)) void
+  (if *touch-moved*
+      (handle-exceptions exn
+        (begin (print-error-message exn)
+               (print-call-chain))
+        (*touch-moved* touch))))
+
+(define *touch-ended* #f)
+(define-external (c_touch_ended ((instance "CCTouch" <CCTouch>) touch)) void
+  (if *touch-ended*
+      (handle-exceptions exn
+        (begin (print-error-message exn)
+               (print-call-chain))
+        (*touch-ended* touch))))
+
+
+(define (fps)
+ (/ 1 (getSecondsPerFrame *director*)))

@@ -18,9 +18,25 @@ public:
   void setPoint(float x, float y);
 };
 
+class CCSize : public CCObject 
+{
+public:
+  CCSize(float w, float h);
+};
+class CCRect : public CCObject
+{
+public:
+  CCRect(float x, float y, float width, float height);
+};
 
 
+class CCScene {} ;
 // Nodes and such:
+
+class CCDirector {
+public:
+  virtual float getSecondsPerFrame() = 0;
+};
 
 
 class CCNode // : public CCObject TODO
@@ -40,7 +56,13 @@ public:
   void stopAllActions(void);
 };
 
-class CCLayer : public CCNode {} ; // TODO
+// layer
+class CCLayer : public CCNode // : TODO
+{
+public:
+  static CCLayer* create();
+};
+
 class CCMenu : public CCLayer {} ; // TODO
 
 class CCMenuItem : public CCNode {} ; // TODO
@@ -56,15 +78,20 @@ public:
   static CCSprite* create(const char *pszFileName);
   virtual void setOpacity(unsigned char var);
   //virtual unsigned char getOpacity();
+  virtual void setTextureRect( CCRect &r); //FIX: this is
+                                                //actually CCRect &r,
+                                                //but bind fails
+  //protected virtual void setTextureCoord(CCRect &r);
 };
 
-// layer
-
-class CCLayer : public CCNode // : TODO
+class CCLabelTTF : public CCSprite
 {
 public:
-  static CCLayer* create();
+  static CCLabelTTF* create(const char* string, const char* fontName, float fontsize);
+  void setString(const char* label);
 };
+
+
 
 // actions
 
@@ -94,8 +121,6 @@ class CCTouch : public CCObject
 public:
   // CCPoint getLocation();
 };
-
-
 
 // drawing
 
