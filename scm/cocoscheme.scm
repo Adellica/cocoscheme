@@ -6,6 +6,7 @@
        srfi-1
        srfi-4
        srfi-18
+       data-structures
        lolevel
        find-extension
        ))
@@ -44,11 +45,11 @@ extern "C" void cs_init () {
 (include "cocoscheme-bind.scm")
 (include "cocoscheme-bindhelpers.scm")
 (include "cocoscheme-fibers.scm")
+(include "cocoscheme-events.scm")
 (include "cocoscheme-draw-shapes.scm")
 
 (use tcp)
 (define *repl-socket* (tcp-listen 1234))
-
 
 (define (repl-prompt op)
   (display "@> " op)
@@ -96,25 +97,38 @@ extern "C" void cs_init () {
                   (repl-loop (make-yielding-input-port IN) OUT)))))
 
 
-
-
-
 (define *update* (lambda () (void)))
-;;(define (add-handler event proc))
+(define *handle-events* (lambda () (void)))
 
 (define *director* #f)
 (define *scene* #f)
 (define-external (c_foo ((instance "CCNode" <CCNode>) root_scene)
                         ((instance "CCDirector" <CCDirector>) director)) void
                         (flush-output)
-                        ;; first run! TODO: make things initiable
+                        
+                        ;; first run! FIX: clean this mess up
                         (if (not *scene*)
                             (add-helper-labels root_scene))
                         (set! *scene* root_scene)
                         (set! *director* director)
+
+                        ;; process any new incomming connections
                         (repl-server-dispatch)
-                        (*update*)
-                        (fiber-yield!))
+                        ;; yield to other fibers; process all pending
+                        ;; repl operations:
+                        (fiber-yield!)
+
+                        ;; handle events
+                        (*handle-events*)
+                        (consume-events!)
+                        
+                        ;; run user-defined game-loop
+                        (handle-exceptions exn
+                          (begin (print-error-message exn)
+                                 (print-call-chain)
+                                 (print "erasing *update* procedure")
+                                 (set! *update* (lambda () (void))))
+                          (*update*)))
 
 
 (define *draw* (lambda () (void)))
@@ -131,13 +145,6 @@ extern "C" void cs_init () {
 (define-external (c_callback ((instance "CCObject" <CCObject>) sender)) void
   (*callback* sender))
 
-
-;; #f if not touching, otherwise vector position
-(define *touch-down* #f)
-(define (*touch-begin* t)
-  (set! *touch-down* (getLocation t)))
-(define (*touch-ended* t)
-  (set! *touch-down* #f))
 
 (include "scratch.scm")
 

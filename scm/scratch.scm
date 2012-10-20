@@ -13,6 +13,14 @@
                                               (body-get-centroid body)) ) 3 0 6 #f))
            (space-bodies space ))))
 
+
+;; #f if not touching, otherwise vector position
+(define *touch-down* #f)
+(add-handler 'touch-begin
+             (lambda (t) (set! *touch-down* (getLocation t))))
+(add-handler 'touch-ended
+             (lambda (t) (set! *touch-down* #f)))
+
 (define (*update*)
    (space-step space (/ 1 120))
    (space-step space (/ 1 120))
@@ -40,6 +48,9 @@
           (filter (lambda (body)
                     (<= (v.y (body-get-pos body)) 0))
                   (space-bodies space)))) )
+
+
+
 
 ;; (define *selection* '())
 ;; (define *bodies* #f)

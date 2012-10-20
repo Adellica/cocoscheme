@@ -73,29 +73,14 @@
     (f32vector x y)))
 
 ;; TODO support multi-touch
-(define *touch-begin* #f)
 (define-external (c_touch_begin ((instance "CCTouch" <CCTouch>) touch)) void
-  (if *touch-begin*
-      (handle-exceptions exn
-        (begin (print-error-message exn)
-               (print-call-chain))
-        (*touch-begin* touch))))
+  (post-event 'touch-begin touch))
 
-(define *touch-moved* #f)
 (define-external (c_touch_moved ((instance "CCTouch" <CCTouch>) touch)) void
-  (if *touch-moved*
-      (handle-exceptions exn
-        (begin (print-error-message exn)
-               (print-call-chain))
-        (*touch-moved* touch))))
+  (post-event 'touch-moved touch))
 
-(define *touch-ended* #f)
 (define-external (c_touch_ended ((instance "CCTouch" <CCTouch>) touch)) void
-  (if *touch-ended*
-      (handle-exceptions exn
-        (begin (print-error-message exn)
-               (print-call-chain))
-        (*touch-ended* touch))))
+  (post-event 'touch-ended touch))
 
 
 (define (fps)
