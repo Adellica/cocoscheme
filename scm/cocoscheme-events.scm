@@ -11,7 +11,7 @@
       (void)
       (error "event must be symbol, handler must be procedure" event)))
 
-(define (post-event . evt-args)
+(define (fire-event . evt-args)
   (if (symbol? (car evt-args))
       (queue-add! *events* evt-args)))
 
