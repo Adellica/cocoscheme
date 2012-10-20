@@ -1,37 +1,111 @@
+(declare
+ (uses chicken-syntax
+       extras
+       ports eval
+       tcp
+       srfi-1
+       srfi-4
+       srfi-18
+       lolevel
+       find-extension
+       ))
 
 #>
-// load chicken at load-time (when so file gets loaded)
-// probably not very safe in terms of error-handling, but
-// it allows us to not worry about any chicken-include-paths
-// from the cocos2d project :
-namespace {
-  struct initializer {
-    initializer() {
-      CHICKEN_run ((void*)C_toplevel) ;
-    }
-  };
-  static initializer i;
+#include <stdio.h>
+#include "cocos2d.h"
+USING_NS_CC;
+
+extern "C" void cs_init () {
+                 printf ("HELLO HELLO HELLO HELLO HELLO HELLO\n");
+                fflush (stdout);
+                CHICKEN_run ((void*)C_toplevel) ;
+                printf ("cocoscheme.scm: CHICKEN_run() done");
+                fflush (stdout);
 }
 <#
 
-(use bind coops cplusplus-object
-     extras chicken chicken-syntax)
-#>
-#include "cocos2d.h"
-USING_NS_CC;
-<#
- 
-(use fibers srfi-4)
+
+(load-verbose #t)
+(fprintf (current-error-port) "************************************ 1\n")
+
+
 ;; fix! 
 (repository-path "/data/data/com.adellica.cocoscheme/lib/")
+(use bind cplusplus-object coops)
+;; make dummy bind module so (use bind) works in repl
+(module bind *)
+(define (bind-adapters#add-adapter . a) #f)
+
+
+(fprintf (current-error-port) "cocoscheme: will bind\n")
+(fprintf (current-error-port) "wish me luck\n")
+(print  <c++-object>)
 
 (include "cocoscheme-bind.scm")
 (include "cocoscheme-bindhelpers.scm")
 
+ 
+;;(use fibers srfi-4)
+
+(define *Q* (make-queue))
+
+(define-record fiber label proc)
+(define-record-printer (fiber x op)
+  (fprintf op "#<fiber ~A~A" (fiber-label x) ">"))
+
+(define current-fiber (make-fiber 'main #f))
+
+
+;; Add current continuation to end of Q-list
+;; and execute next fiber
+(define (fiber-yield!)
+  (call/cc
+   (lambda (k)
+     (fiber-proc-set! current-fiber k)
+     (queue-add! *Q* current-fiber)
+     (set! current-fiber (queue-remove! *Q*))
+     ((fiber-proc current-fiber) #f))))
+
+;; don't add self to queue (like yield), then run next
+(define (fiber-exit!)
+  (if (queue-empty? *Q*)
+      (signal "cannot exit fibre: no-one else currently running")
+      (begin
+        (set! current-fiber (queue-remove! *Q*))
+        ((fiber-proc current-fiber) #f))))
+
+;; add fiber to thread queue.
+;; it should eventually get run after
+;; enough fiber-yield!s
+(define (fiber-new label proc)
+  (queue-add! *Q*
+              (make-fiber label
+                          (lambda (ignore-return-value)
+                            (proc)
+                            (fiber-exit!)))))
+
+(define (fiber-list)
+  (cons current-fiber (queue->list *Q*)))
+(define (fiber-current)
+  (fiber-label current-fiber))
+
+
+(define (make-yielding-input-port port)
+  (let ([reader (lambda ()
+                  (let loop ()
+                    (if (char-ready? port)
+                        (read-char port)
+                        (begin (fiber-yield!)
+                               (loop)))))] )
+    (make-input-port reader
+                     (lambda () (char-ready? port))
+                     (lambda () (close-input-port port)))))
+
+
+
 
 (use tcp)
 (define *repl-socket* (tcp-listen 1234))
-
 
 
 (define (repl-prompt op)
@@ -80,61 +154,51 @@ USING_NS_CC;
                   (repl-loop (make-yielding-input-port IN) OUT)))))
 
 
-(define *scene* #f)
 
-(define-method (getLocation (touch <CCTouch>))
-  (let ([x ((foreign-lambda* float (((instance "CCTouch" <CCTouch>) touch))
-                        "return(touch->getLocation().x);")
-            touch)]
-        [y ((foreign-lambda* float (((instance "CCTouch" <CCTouch>) touch))
-                        "return(touch->getLocation().y);")
-            touch)])
-    (f32vector x y)))
-
-(define-method (getDelta (touch <CCTouch>))
-  (let ([x ((foreign-lambda* float (((instance "CCTouch" <CCTouch>) touch))
-                        "return(touch->getDelta().x);")
-            touch)]
-        [y ((foreign-lambda* float (((instance "CCTouch" <CCTouch>) touch))
-                        "return(touch->getDelta().y);")
-            touch)])
-    (f32vector x y)))
 
 
 (define *update* (lambda () (void)))
-(define-external (c_foo ((instance "CCNode" <CCNode>) root_scene)) void
-  (set! *scene* root_scene)
-  (repl-server-dispatch)
-  (*update*)
-  (fiber-yield!))
+;;(define (add-handler event proc))
+
+(define *director* #f)
+(define *scene* #f)
+(define-external (c_foo ((instance "CCNode" <CCNode>) root_scene)
+                        ((instance "CCDirector" <CCDirector>) director)) void
+                        (flush-output)
+                        ;; first run! TODO: make things initiable
+                        (if (not *scene*)
+                            (add-helper-labels root_scene))
+                        (set! *scene* root_scene)
+                        (set! *director* director)
+                        (repl-server-dispatch)
+                        (*update*)
+                        (fiber-yield!))
 
 
 (define *draw* (lambda () (void)))
 (define-external (c_draw) void
   (handle-exceptions exn
     (begin (print-error-message exn)
-           (print-call-chain))
+           (print-call-chain)
+           (print "erasing *draw* procedure")
+           (set! *draw* (lambda () (void))))
     (*draw*)))
 
-
-;; TODO support multi-touch
-(define *touch-begin* #f)
-(define-external (c_touch_begin ((instance "CCTouch" <CCTouch>) touch)) void
-  (if *touch-begin*
-      (handle-exceptions exn
-        (begin (print-error-message exn)
-               (print-call-chain))
-        (*touch-begin* touch))))
-
-(define *touch-moved* #f)
-(define-external (c_touch_moved ((instance "CCTouch" <CCTouch>) touch)) void
-  (if *touch-moved*
-      (handle-exceptions exn
-        (begin (print-error-message exn)
-               (print-call-chain))
-        (*touch-moved* touch))))
+;; FIX: make safe (crashes with exceptions)
+(define (*callback* sender) (void))
+(define-external (c_callback ((instance "CCObject" <CCObject>) sender)) void
+  (*callback* sender))
 
 
+;; #f if not touching, otherwise vector position
+(define *touch-down* #f)
+(define (*touch-begin* t)
+  (set! *touch-down* (getLocation t)))
+(define (*touch-ended* t)
+  (set! *touch-down* #f))
 
+(include "cocoscheme-draw-shapes.scm")
+(include "scratch.scm")
 
 (return-to-host)
+
