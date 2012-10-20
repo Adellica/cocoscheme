@@ -98,7 +98,7 @@ extern "C" void cs_init () {
 
 
 (define *update* (lambda () (void)))
-(define *handle-events* (lambda () (void)))
+(define *handle-events* (lambda () (consume-events! *events*)))
 
 (define *director* #f)
 (define *scene* #f)
@@ -118,9 +118,7 @@ extern "C" void cs_init () {
                         ;; repl operations:
                         (fiber-yield!)
 
-                        ;; handle events
                         (*handle-events*)
-                        (consume-events!)
                         
                         ;; run user-defined game-loop
                         (handle-exceptions exn

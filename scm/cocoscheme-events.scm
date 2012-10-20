@@ -28,9 +28,9 @@
           (if (apply (car hs) evt-args)
               (loop (cdr hs)))))))
 
-(define (consume-events!)
+(define (consume-events! events)
   (let loop ()
-    (if (queue-empty? *events*)
+    (if (queue-empty? events)
         (void)
-        (begin (dispatch-event (queue-remove! *events*))
+        (begin (dispatch-event (queue-remove! events))
                (loop)))))
