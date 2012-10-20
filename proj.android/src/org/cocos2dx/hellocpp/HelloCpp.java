@@ -29,11 +29,17 @@ import android.os.Bundle;
 
 public class HelloCpp extends Cocos2dxActivity{
 
-	protected void onCreate(Bundle savedInstanceState){
-		super.onCreate(savedInstanceState);
-	}
+    protected void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+    }
 	
     static {
-         System.loadLibrary("hellocpp");
+        System.loadLibrary("chipmunk"); // tricky! must be loaded
+                                        // before chickmunk (ldd
+                                        // dependencies fail to load because
+                                        // LD_LIBRARY_LOAD_PATH is wrong)
+        System.loadLibrary("chicken");
+        //System.loadLibrary("cocoscheme");
+        System.loadLibrary("hellocpp");
     }
 }
