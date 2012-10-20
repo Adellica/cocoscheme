@@ -22,6 +22,8 @@ USING_NS_CC;
 <#
  
 (use fibers srfi-4)
+;; fix! 
+(repository-path "/data/data/com.adellica.cocoscheme/lib/")
 
 (include "cocoscheme-bind.scm")
 (include "cocoscheme-bindhelpers.scm")
