@@ -1,126 +1,98 @@
-(use bind cplusplus-object coops lolevel chickmunk)
+(use cplusplus-object coops lolevel chickmunk srfi-13)
 
-(begin
-  (define sprite (CCSprite::create "./ground/G000M803.png"))
-  (addChild *scene* sprite))
+(include "scratch-truck.scm")
+(include "scratch-labels.scm")
+;; (define space (space-new))
+;; (define (*draw*) #f)
+(define (*draw*) #f
+  (draw-shapes (space-shapes space))
 
-(begin
-  (define sprite (list-ref (children *scene*) 0))
-  (setOpacity sprite (integer->char 80)))
+  (if #f ;; draw cog?
+      (map (lambda (body) #f
+              (ccDrawCircle (v->CCPoint (vsub (body-get-pos body)
+                                              (body-get-centroid body)) ) 3 0 6 #f))
+           (space-bodies space ))))
+
+(define (*update*)
+   (space-step space (/ 1 120))
+   (space-step space (/ 1 120))
 
 
-(runAction sprite (CCRotateBy::create 10 180))
-
-(begin
-  (define sprite2 (CCSprite::create "G000M800.png"))
-  (addChild sprite sprite2))
-
-
-(let ([x 3])
-  (setPosition sprite (+ 64 (* x 128)) 300))
-
-(runAction *scene* (CCRotateBy::create 2 90))
-
-(setPosition *scene* 0 0)
-
-(setPosition (makef <CCNode> 'this (pointer? (objectAtIndex (getChildren *scene*) 0)))
-             100 500)
-
-(map getRotation (children (list-ref (children *scene*) 2)))
-
-(define sprite (list-ref (children *scene*) 1))
-
-(runAction *scene* (CCMoveBy::create 1 (new <CCPoint> -5 -5)))
-
-(define (*touch-moved* touch)
-
-  (print "delta: " (getDelta touch))
-  (setPosition *scene*
-               (f32vector-ref (getLocation touch) 0)
-               (f32vector-ref (getLocation touch) 1))
+  (if truck
+      (begin
+        (if *touch-down*
+            (let ([thrust (if (>= (v.x *touch-down*) 450) -10.0 10.0)])
+              (for-each
+               (lambda (wheel)
+                 (body-set-ang-vel wheel (fp+ (body-get-ang-vel wheel) thrust)))
+               (list wf wr))))
+        ;; camera follows truck
+        (let* ([cv (body-get-pos truck)]
+               [camera.x (- 450 (v.x cv))]
+               [camera.y (- 300 (v.y cv))])
+          (setPosition *scene* camera.x camera.y))))
   
-  #|(runAction *scene* (CCMoveBy::create 0 (new <CCPoint>
-  (f32vector-ref (getDelta touch) 0)
-  (f32vector-ref (getDelta touch) 1))) )|#
-  )
+  ;; remove bodies that are off the screen
+  (if #f (for-each
+          (lambda (body)
+            (for-each (lambda (shape) (space-remove-shape space shape)) (body-shapes body))
+            (space-remove-body space body))
+          (filter (lambda (body)
+                    (<= (v.y (body-get-pos body)) 0))
+                  (space-bodies space)))) )
 
-(define space
-  (nodes->space `(space ((gravity (0 -10)))
-                        (body ()
-                              (box (vertices ((230 530)
-                                              (230 410)
-                                              (310 530)))))
-                        (body ((pos (350 350)))
-                              (circle (radius 50)
-                                      (friction 0.5)))
-                        (body ((pos (420 230)))
-                              (circle (radius 50)
-                                      (friction 0.5)))
-                        (body ((static 1))
-                              (segment (endpoints ((0 150)
-                                                   (800 150)))
-                                       (friction 0.5))))))
+;; (define *selection* '())
+;; (define *bodies* #f)
+;; (define *body* #f)
+;; ;;(use chickmunk)
+;; ;;(define space (space-new))
+;; (define (*touch-begin* t)
+;;   (let ([cv (getLocation t)])
+;;     (set! *selection* (space-point-query space cv #xFFFF 0))
+;;     (set! *bodies* (map shape-get-body *selection* ))
+;;     (if (null? *bodies*) #f
+;;         (set! *body* (car *bodies*)))
+;;     (print "selection: " *selection* " --- " (map (cut shape-get-moment <> #f 0.0001) *selection*))
+;; ; (print (body-pos2world) )
+;;     ))
+
+;;(define pin-joint (pin-joint-new w1 (space-get-static-body space) (v 0 0) (v 400 400)))
+;;(pin-joint-set-dist pin-joint 100)
+
+;; (begin
+;;   (body-set-pos w1 (v 400 400))
+;;   (body-set-pos w2 (v 400 400))
+;;   (body-set-vel w1 (v 0 0))
+;;   (body-set-vel w2 (v 0 0))
+;;   (body-set-force w1 (v 0 0))
+;;   (body-set-force w2 (v 0 0)))
+
+;; (space-add-constraint space pin-joint)
+;; (space-remove-constraint space pin-joint)
+
+;; (pin-joint-get-dist pin-joint)
+;; (pin-joint-get-anchr1 pin-joint)
+;; (pin-joint-get-anchr2 pin-joint)
 
 
-(define poly (car (filter (lambda (sh)
-                            (eq? 'poly (shape-get-type sh)))
-                          (space-shapes space))))
-(define circle (car (filter (lambda (sh)
-                            (eq? 'circle (shape-get-type sh)))
-                          (space-shapes space))))
-(map shape-get-type (list poly circle))
+;; (define (*touch-moved* touch) #f
 
-(poly-shape-get-vert poly 0)
-(define (poly-shape-get-verts-locative poly)
-  (assert (eq? 'poly (shape-get-type poly)))
+;;   (let ([delta (getDelta touch)]
+;;         [cv (getLocation touch)])
+;;    (map (lambda (b) (body-apply-impulse b (vmult delta 5.0) (vsub cv (body-get-pos b)))) *bodies* ))
   
-  (let loop ([n (sub1 (poly-shape-get-num-verts poly))]
-            [r '()])
-   (if (< n 0)
-       r
-       (loop (sub1 n)
-             (cons (poly-shape-get-vert poly n)
-                   r)))))
 
-(define (poly-shape-get-world-vertices poly)
-  (map vect->list
-       (map (lambda (vert-loc)
-          (body-local2world (shape-get-body poly)
-                            vert-loc))
-        (poly-shape-get-verts-locative poly))))
-
-(poly-shape-get-world-vertices poly)
-(poly-shape-get-vertices poly)
-
-(define (draw-shape-poly poly)
-  (assert (eq? (shape-get-type poly) 'poly))
-  (ccDrawSolidPoly (apply f32vector (flatten (poly-shape-get-world-vertices poly)))
-                   (poly-shape-get-num-verts poly)
-                   1 0 1 0.5))
+;;   ;; (print "delta: " (getDelta touch))
+;;   ;; (setPosition *scene*
+;;   ;;              (f32vector-ref (getLocation touch) 0)
+;;   ;;              (f32vector-ref (getLocation touch) 1))
+  
+;;   #|(runAction *scene* (CCMoveBy::create 0 (new <CCPoint>
+;;   (f32vector-ref (getDelta touch) 0)
+;;   (f32vector-ref (getDelta touch) 1))) )|#
+;;   )
 
 
 
-(define (draw-shape-circle circle)
-  (assert (eq? (shape-get-type circle) 'circle))
-  (ccDrawCircle (apply new (cons <CCPoint> (vect->list
-                                            (vadd
-                                             (circle-shape-get-offset circle)
-                                             (body-get-pos (shape-get-body circle))))) )
-                (circle-shape-get-radius circle)
-                (body-get-angle (shape-get-body circle))
-                16 #t))
-
-(define (draw-shapes shapes)
-  (for-each (lambda (shape)
-              (case (shape-get-type shape)
-                ((circle) (draw-shape-circle shape))
-                ((poly) (draw-shape-poly shape))
-                (else (void))))
-            shapes))
 
 
-
-(define (*draw*) #f)
-(define (*draw*) 
-  (space-step space (/ 1 60))
-  (draw-shapes (space-shapes space)))
