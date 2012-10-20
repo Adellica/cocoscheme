@@ -44,6 +44,7 @@ extern "C" void cs_init () {
 (include "cocoscheme-bind.scm")
 (include "cocoscheme-bindhelpers.scm")
 (include "cocoscheme-fibers.scm")
+(include "cocoscheme-draw-shapes.scm")
 
 (use tcp)
 (define *repl-socket* (tcp-listen 1234))
@@ -138,7 +139,6 @@ extern "C" void cs_init () {
 (define (*touch-ended* t)
   (set! *touch-down* #f))
 
-(include "cocoscheme-draw-shapes.scm")
 (include "scratch.scm")
 
 (return-to-host)
