@@ -1,0 +1,15 @@
+#+TODO: TODO(t) STARTED(s) WAITING(w) | DONE(d) CANCELED(c)
+
+* Cocos2D
+** DONE Networked REPL
+** DONE Make it work on Android
+** TODO stdout: broadcast on REPLs!
+** SpaceManager
+*** TODO Make cp shapes<-> coco sprites
+*** TODO Render textures at runtime? (segments become nice metal bars etc)
+*** TODO Make 
+** WAITING Investigate bad_alloc crash (Linux only!)
+*** DONE find out if it works properly on Android (no memory leak there!)
+** Some game engine features
+*** TODO Pause game, go back 5 seconds and show the future! Just like Bret Victor does.
+*** TODO Multiplayer! Chipmunk space deltas and sync!
