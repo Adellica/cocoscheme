@@ -1,0 +1,7 @@
+((egg "record-variants.egg")
+ (synopsis "Optimized record access")
+ (author "Jim Ursetto")
+ (category lang-exts)
+ (license "BSD")
+ (doc-from-wiki)
+ (files "record-variants.meta" "record-variants.setup" "record-variants.scm"))

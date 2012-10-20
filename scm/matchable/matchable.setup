@@ -1,0 +1,6 @@
+(compile -s -O3 -d0 matchable.scm -j matchable)
+(compile -s -O3 -d0 matchable.import.scm)
+
+(install-extension 'matchable
+ '("matchable.so" "matchable.import.so")
+ '((version "3.1")))

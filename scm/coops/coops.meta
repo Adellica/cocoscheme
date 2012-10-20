@@ -1,0 +1,11 @@
+;;;; coops.meta -*- Scheme -*-
+
+((synopsis "An featureful object system")
+ (category oop)
+ (doc-from-wiki)
+ (license "BSD")
+ (author "Dorai Sitaram and felix winkelmann")
+ (depends matchable record-variants)
+ (test-depends test miscmacros)
+ (files "coops.release-info" "coops-primitive-objects.scm" "coops.meta" "coops.scm" "coops-module.scm" "tests/bench.scm" "tests/run.scm" "tests/tests.scm" "coops.setup"))
+

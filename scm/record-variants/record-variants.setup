@@ -1,0 +1,9 @@
+(compile -host -s -O2 -d0 record-variants.scm -j record-variants)
+(compile -host -s -O2 -d0 record-variants.import.scm)
+
+(install-extension
+  'record-variants
+  '("record-variants.so" "record-variants.import.so")
+  `((version 0.5)
+    (syntax)
+    (documentation "record-variants.html")))

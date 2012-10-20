@@ -1,0 +1,12 @@
+;;;; coops.setup -*- Scheme -*-
+
+(compile -s -O3 -d1 coops-module.scm -JS -o coops.so)
+(compile -s -O3 -d0 coops.import.scm)
+(compile -s -O3 -d1 coops-primitive-objects -JS)
+(compile -s -O3 -d0 coops-primitive-objects.import.scm)
+
+(install-extension
+ 'coops
+ '("coops.so" "coops.import.so"
+   "coops-primitive-objects.so" "coops-primitive-objects.import.so")
+ '((version 1.92)))
