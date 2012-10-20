@@ -36,6 +36,31 @@ class CCScene {} ;
 class CCDirector {
 public:
   virtual float getSecondsPerFrame() = 0;
+  double getAnimationInterval();
+  virtual void setAnimationInterval(double value) = 0;
+  unsigned int getTotalFrames();
+
+  CCScene* getRunningScene();
+
+  // CCSize getWinSize();
+  // CCSize getWinSizeInPixels();
+  
+  bool isPaused();
+  void pause();
+  void resume();
+
+  void popScene();
+  void popToRootScene();
+
+  void pushScene(CCScene *scene);
+  void replaceScene(CCScene *scene);
+
+  void reshapeProjection(const CCSize & newWindowSize );
+
+  void setDisplayStats(bool bDisplayStatus);
+
+  static CCDirector* sharedDirector();
+  
 };
 
 
