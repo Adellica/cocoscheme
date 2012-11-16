@@ -1,5 +1,4 @@
 
-
 ## Cocos2Dx with Chicken Scheme
 
 This is the source code for the [cocoscheme](https://play.google.com/store/apps/details?id=com.adellica.cocoscheme) demo on Google Play.
@@ -9,6 +8,7 @@ It has, unfortunately, not reached a presentable state yet. The build-process is
 ### Dependencies
 
 * Chicken Scheme
+* [Cocos2Dx](http://www.cocos2d-x.org/news/74)
 * The newest version of [chickmunk](https://github.com/kristianlm/chickmunk)
 * The newest version of [this](https://github.com/kristianlm/chicken-bind) chicken-bind.
 * [chicken-android](https://github.com/kristianlm/chicken-android) to build
